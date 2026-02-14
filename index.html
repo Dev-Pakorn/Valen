@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Happy Valentine's Day</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #ff8fa3;
+            --bg-color: #fcfcfc;
+            --text-main: #4a4a4a;
+            --border: #eeeeee;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0; padding: 0;
+            min-height: 100dvh;
+            display: flex; flex-direction: column; align-items: center;
+            overflow-x: hidden;
+            padding-top: env(safe-area-inset-top);
+        }
+
+        /* --- Quiz Overlay --- */
+        #quiz-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100dvh;
+            background: white;
+            z-index: 1000;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            transition: opacity 0.5s ease;
+            padding: 20px;
+        }
+
+        .mascot-gif {
+            width: 160px; height: 160px;
+            object-fit: contain;
+            margin-bottom: 20px;
+        }
+
+        .quiz-card {
+            background: white; width: 100%; max-width: 320px; text-align: center;
+        }
+
+        .quiz-card h2 {
+            font-weight: 600; font-size: 1.8rem; margin: 0 0 5px 0; color: var(--text-main);
+        }
+
+        .status-text {
+            font-size: 1rem; color: #888; font-weight: 300; min-height: 1.5em; margin-bottom: 20px;
+        }
+
+        .quiz-input {
+            width: 100%; padding: 15px; margin: 10px 0;
+            border: 1px solid var(--border); border-radius: 12px;
+            background: #fafafa;
+            font-family: 'Kanit', sans-serif; font-size: 16px;
+            text-align: center; outline: none; transition: all 0.3s;
+        }
+        
+        .quiz-input:focus { 
+            border-color: var(--primary); background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .btn-check {
+            background: var(--text-main); color: white;
+            border: none; padding: 15px 30px; border-radius: 12px;
+            font-family: 'Kanit', sans-serif; font-size: 1rem;
+            cursor: pointer; width: 100%; margin-top: 10px;
+            transition: transform 0.2s;
+        }
+        .btn-check:active { transform: scale(0.98); }
+
+        /* --- Main Content --- */
+        #main-content {
+            display: none; opacity: 0; width: 100%;
+            transition: opacity 1s ease;
+            padding-bottom: 60px;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-weight: 600; font-size: 2rem; color: var(--text-main);
+            margin: 30px 0 20px 0; letter-spacing: -0.5px;
+        }
+
+        /* รูปคู่หลัก */
+        .main-photo-frame {
+            width: 250px; height: 250px;
+            margin: 0 auto 30px auto;
+            border-radius: 30px; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            animation: float 6s ease-in-out infinite;
+        }
+        .main-photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+        .timer-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 15px; max-width: 350px; margin: 0 auto 40px; padding: 0 10px;
+        }
+        .time-box { text-align: center; }
+        .time-val {
+            font-size: 1.8rem; font-weight: 600; color: var(--primary);
+            font-family: 'Kanit', sans-serif; line-height: 1;
+        }
+        .time-label { 
+            font-size: 0.7rem; color: #ccc; margin-top: 5px; 
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .simple-gallery {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 10px; padding: 0 20px; max-width: 500px; margin: 0 auto;
+        }
+        .simple-gallery img {
+            width: 100%; border-radius: 12px; aspect-ratio: 1/1; object-fit: cover;
+        }
+
+        /* ส่วนปุ่มบอกรัก */
+        .love-msg-container {
+            margin-top: 40px; padding: 0 20px; min-height: 60px;
+        }
+        .love-btn {
+            background: white; border: 1px solid var(--primary);
+            color: var(--primary); padding: 10px 20px;
+            border-radius: 50px; font-family: 'Kanit', sans-serif;
+            cursor: pointer; margin-bottom: 15px; transition: all 0.3s;
+        }
+        .love-btn:hover { background: var(--primary); color: white; }
+        
+        #love-text {
+            font-size: 1.1rem; color: var(--text-main); font-weight: 400; min-height: 1.5em;
+        }
+
+        .cursor { display: inline-block; width: 2px; background-color: #ccc; animation: blink 1s infinite; }
+        
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="master.wav" type="audio/mpeg">
+    </audio>
+
+    <div id="quiz-overlay">
+        <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExdHoxMHdjaTR6NDRoZGNjdmtkNWliZjU4MXN1cGdybzVrazExOWozdSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Lv2VhwHrt6ljhvZ6LF/giphy.gif" 
+             id="mascot" class="mascot-gif" alt="Mascot">
+
+        <div class="quiz-card" id="question-box">
+            <h2>Love Check</h2>
+            <div id="status-msg" class="status-text">เดทแรกของเราที่ไหนเอ่ย?</div>
+            <input type="text" id="answer-input" class="quiz-input" placeholder="พิมพ์คำตอบ..." autocomplete="off">
+            <button class="btn-check" onclick="checkAnswer()">Confirm</button>
+        </div>
+    </div>
+
+    <div id="main-content">
+        <div class="hero-title">Happy Valentine's Day</div>
+        
+        <div class="main-photo-frame">
+            <img src="main.png" alt="Main Photo">
+        </div>
+
+        <div class="timer-grid">
+            <div class="time-box"><div class="time-val" id="days">0</div><div class="time-label">Days</div></div>
+            <div class="time-box"><div class="time-val" id="hours">0</div><div class="time-label">Hrs</div></div>
+            <div class="time-box"><div class="time-val" id="mins">0</div><div class="time-label">Mins</div></div>
+            <div class="time-box"><div class="time-val" id="secs">0</div><div class="time-label">Secs</div></div>
+        </div>
+
+        <div class="simple-gallery">
+            <img src="mem1.png" alt="Memory 1">
+            <img src="mem2.png" alt="Memory 2">
+            <img src="mem3.png" alt="Memory 3">
+            <img src="mem4.png" alt="Memory 4">
+        </div>
+
+        <div class="love-msg-container">
+            <button class="love-btn" onclick="generateLove()">💖 Click for Magic</button>
+            <div id="love-text"></div>
+        </div>
+        
+        <p style="margin-top:20px; color:#ccc; font-size:0.9rem;">
+            <span id="typing-text"></span><span class="cursor">|</span>
+        </p>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const startDate = new Date(2024, 4, 22, 21, 15, 0);
+        const answers = {
+            q1: ["แปด", "ร้านแปด", "ร้าน8", "8"], 
+            q2: ["ชาบู", "หมูกระทะ", "ญี่ปุ่น", "อาหารเกาหลี", "อาหารญี่ปุ่น", "อาหารจีน"] 
+        };
+
+        const footerMessage = "Love you more than yesterday, but less than tomorrow. ❤️";
+
+        const loveReasons = [
+            "ชอบเวลาเธอหัวเราะที่สุดเลย 😊",
+            "ขอบคุณที่คอยซัพพอร์ตกันนะ",
+            "อยู่ด้วยกันแบบนี้ไปนานๆ นะ",
+            "วันไหนเหนื่อยๆ ก็มีเธอนี่แหละคอยฮีลใจ",
+            "รักที่เป็นเธอแบบนี้นะ ❤️",
+            "หิวเมื่อไหร่ก็บอก เดี๋ยวพาไปกิน!",
+            "ดีใจที่มีเธอเข้ามาในชีวิตนะ"
+        ];
+
+        // --- Logic ---
+        let wrongCount = 0;
+        let currentQuestion = 1;
+        const gifs = {
+            normal: "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExdHoxMHdjaTR6NDRoZGNjdmtkNWliZjU4MXN1cGdybzVrazExOWozdSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Lv2VhwHrt6ljhvZ6LF/giphy.gif",
+            confused: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjR6ZnF6MmF6MmF6MmF6MmF6MmF6MmF6MmF6MmF6MyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/3o7bu3XilJ5BOiSGic/giphy.gif",
+            annoyed: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNmZ6MmF6MmF6MmF6MmF6MmF6MmF6MmF6MmF6MmF6MyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/11tTNkNy1SdXGg/giphy.gif",
+            angry: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGZ6MmF6MmF6MmF6MmF6MmF6MmF6MmF6MmF6MmF6MyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/11tTNkNy1SdXGg/giphy.gif",
+            happy: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHZ6MmF6MmF6MmF6MmF6MmF6MmF6MmF6MmF6MmF6MyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/26FLdmIp6wJr91JAI/giphy.gif"
+        };
+
+        function checkAnswer() {
+            const input = document.getElementById('answer-input').value.trim().toLowerCase();
+            const mascot = document.getElementById('mascot');
+            const statusMsg = document.getElementById('status-msg');
+            const card = document.getElementById('question-box');
+
+            let isCorrect = false;
+            if (currentQuestion === 1 && answers.q1.some(ans => input.includes(ans))) isCorrect = true;
+            else if (currentQuestion === 2 && answers.q2.some(ans => input.includes(ans))) isCorrect = true;
+
+            if (isCorrect) {
+                wrongCount = 0;
+                if (currentQuestion === 1) {
+                    currentQuestion = 2;
+                    document.getElementById('answer-input').value = "";
+                    statusMsg.innerText = "ข้อสุดท้าย... ของกินที่เค้าชอบที่สุด?";
+                    mascot.src = gifs.normal;
+                    confetti({ particleCount: 30, spread: 50, origin: { y: 0.6 } });
+                } else {
+                    mascot.src = gifs.happy;
+                    statusMsg.innerText = "เย้! ถูกต้อง 💖";
+                    statusMsg.style.color = "#ff8fa3";
+                    
+                    var audio = document.getElementById("bg-music");
+                    audio.volume = 0.5;
+                    audio.play().catch(e => console.log("Audio play failed: ", e));
+
+                    setTimeout(() => {
+                        document.getElementById('quiz-overlay').style.opacity = '0';
+                        setTimeout(() => {
+                            document.getElementById('quiz-overlay').style.display = 'none';
+                            const main = document.getElementById('main-content');
+                            main.style.display = 'block';
+                            setTimeout(() => {
+                                main.style.opacity = '1';
+                                typeWriter();
+                            }, 100);
+                            startConfetti();
+                        }, 500);
+                    }, 1500);
+                }
+            } else {
+                wrongCount++;
+                card.classList.add('shake');
+                setTimeout(() => card.classList.remove('shake'), 500);
+                document.getElementById('answer-input').value = "";
+                statusMsg.style.color = "#d00000";
+                
+                if (wrongCount === 1) { statusMsg.innerText = "ผิดนะ... จำไม่ได้หรอ? 🥺"; mascot.src = gifs.confused; }
+                else if (wrongCount === 2) { statusMsg.innerText = "เฮ้ย! ผิดอีกละ ตั้งใจหน่อยดิ๊ 😤"; mascot.src = gifs.annoyed; }
+                else if (wrongCount >= 3) { statusMsg.innerText = "งอนแล้วนะ! ไปนอนนอกบ้านเลย! 🔥"; mascot.src = gifs.angry; }
+            }
+        }
+
+        function generateLove() {
+            const textElement = document.getElementById('love-text');
+            const randomMsg = loveReasons[Math.floor(Math.random() * loveReasons.length)];
+            textElement.style.opacity = 0;
+            setTimeout(() => {
+                textElement.innerText = randomMsg;
+                textElement.style.opacity = 1;
+                confetti({ particleCount: 15, spread: 40, origin: { y: 0.8 } });
+            }, 200);
+        }
+
+        let i = 0;
+        function typeWriter() {
+            if (i < footerMessage.length) {
+                document.getElementById("typing-text").innerHTML += footerMessage.charAt(i);
+                i++;
+                setTimeout(typeWriter, 50);
+            }
+        }
+
+        function updateTimer() {
+            const now = new Date();
+            const diff = now - startDate;
+            document.getElementById('days').innerText = Math.floor(diff / (1000 * 60 * 60 * 24));
+            document.getElementById('hours').innerText = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            document.getElementById('mins').innerText = Math.floor((diff / 1000 / 60) % 60);
+            document.getElementById('secs').innerText = Math.floor((diff / 1000) % 60);
+        }
+
+        function startConfetti() {
+            var duration = 3 * 1000;
+            var end = Date.now() + duration;
+            (function frame() {
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+
+        setInterval(updateTimer, 1000);
+        updateTimer();
+    </script>
+</body>
+</html>
