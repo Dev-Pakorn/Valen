@@ -5,146 +5,190 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Happy Valentine's Day</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Charmonman:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
         :root {
             --primary: #ff8fa3;
-            --bg-color: #fcfcfc;
-            --text-main: #4a4a4a;
-            --border: #eeeeee;
+            --primary-dark: #e05770;
+            --secondary: #fff0f3;
+            --text-main: #5d4037;
+            --text-light: #8d6e63;
+            --glass: rgba(255, 255, 255, 0.90);
+            --shadow: 0 8px 32px 0 rgba(255, 143, 163, 0.2);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: 'Kanit', sans-serif;
-            background-color: var(--bg-color);
+            background: linear-gradient(135deg, #fff5f7 0%, #ffe3e8 100%);
             color: var(--text-main);
             margin: 0; padding: 0;
             min-height: 100dvh;
             display: flex; flex-direction: column; align-items: center;
             overflow-x: hidden;
             padding-top: env(safe-area-inset-top);
+            cursor: pointer; /* ให้รู้ว่าจิ้มได้ */
         }
+
+        /* --- Music Button --- */
+        .music-btn {
+            position: fixed; top: 20px; right: 20px;
+            background: white; width: 40px; height: 40px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 2000; cursor: pointer; border: none; font-size: 20px;
+            transition: transform 0.3s;
+        }
+        .music-btn.playing { animation: spin 3s linear infinite; }
 
         /* --- Quiz Overlay --- */
         #quiz-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100dvh;
-            background: white;
+            background: rgba(255,255,255,0.98); 
             z-index: 1000;
             display: flex; flex-direction: column;
             justify-content: center; align-items: center;
-            transition: opacity 0.5s ease;
-            padding: 20px;
+            transition: opacity 0.6s ease; padding: 20px;
         }
 
-        .mascot-gif {
-            width: 160px; height: 160px;
-            object-fit: contain;
-            margin-bottom: 20px;
-        }
-
-        .quiz-card {
-            background: white; width: 100%; max-width: 320px; text-align: center;
-        }
-
-        .quiz-card h2 {
-            font-weight: 600; font-size: 1.8rem; margin: 0 0 5px 0; color: var(--text-main);
-        }
-
-        .status-text {
-            font-size: 1rem; color: #888; font-weight: 300; min-height: 1.5em; margin-bottom: 20px;
-        }
-
-        .quiz-input {
-            width: 100%; padding: 15px; margin: 10px 0;
-            border: 1px solid var(--border); border-radius: 12px;
-            background: #fafafa;
-            font-family: 'Kanit', sans-serif; font-size: 16px;
-            text-align: center; outline: none; transition: all 0.3s;
-        }
-        
-        .quiz-input:focus { 
-            border-color: var(--primary); background: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
-
-        .btn-check {
-            background: var(--text-main); color: white;
-            border: none; padding: 15px 30px; border-radius: 12px;
-            font-family: 'Kanit', sans-serif; font-size: 1rem;
-            cursor: pointer; width: 100%; margin-top: 10px;
-            transition: transform 0.2s;
-        }
-        .btn-check:active { transform: scale(0.98); }
+        .mascot-gif { width: 140px; height: 140px; object-fit: contain; margin-bottom: 20px; filter: drop-shadow(0 5px 15px rgba(255,143,163,0.3)); }
+        .quiz-card { background: white; width: 100%; max-width: 340px; text-align: center; padding: 30px; border-radius: 25px; box-shadow: 0 20px 60px rgba(255, 143, 163, 0.25); }
+        .quiz-card h2 { font-weight: 600; font-size: 1.8rem; margin: 0 0 10px 0; color: var(--primary-dark); }
+        .status-text { font-size: 1rem; color: var(--text-light); margin-bottom: 20px; min-height: 1.5em;}
+        .quiz-input { width: 100%; padding: 15px; margin: 10px 0 20px; border: 2px solid #f0f0f0; border-radius: 15px; background: #fdfdfd; font-family: 'Kanit', sans-serif; font-size: 16px; text-align: center; outline: none; transition: all 0.3s; }
+        .quiz-input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px rgba(255,143,163,0.1); }
+        .btn-check { background: linear-gradient(45deg, var(--primary), var(--primary-dark)); color: white; border: none; padding: 12px 30px; border-radius: 50px; font-family: 'Kanit', sans-serif; font-weight: 500; font-size: 1rem; cursor: pointer; width: 100%; box-shadow: 0 5px 15px rgba(255, 143, 163, 0.4); transition: transform 0.2s; }
+        .btn-check:active { transform: scale(0.95); }
 
         /* --- Main Content --- */
-        #main-content {
-            display: none; opacity: 0; width: 100%;
-            transition: opacity 1s ease;
-            padding-bottom: 60px;
-            text-align: center;
-        }
+        #main-content { display: none; opacity: 0; width: 100%; transition: opacity 1s ease; padding-bottom: 80px; text-align: center; }
 
         .hero-title {
-            font-weight: 600; font-size: 2rem; color: var(--text-main);
-            margin: 30px 0 20px 0; letter-spacing: -0.5px;
+            font-family: 'Charmonman', cursive;
+            font-weight: 700; font-size: 2.5rem; 
+            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin: 40px 0 25px 0; letter-spacing: 1px;
+            text-shadow: 0 5px 15px rgba(255,143,163,0.2);
         }
 
-        /* รูปคู่หลัก */
         .main-photo-frame {
-            width: 250px; height: 250px;
-            margin: 0 auto 30px auto;
-            border-radius: 30px; overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 240px; height: 240px; margin: 0 auto 35px auto;
+            border-radius: 50%; overflow: hidden;
+            box-shadow: 0 15px 35px rgba(255, 143, 163, 0.3);
+            border: 6px solid white;
             animation: float 6s ease-in-out infinite;
         }
         .main-photo-frame img { width: 100%; height: 100%; object-fit: cover; }
 
-        .timer-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 15px; max-width: 350px; margin: 0 auto 40px; padding: 0 10px;
-        }
-        .time-box { text-align: center; }
-        .time-val {
-            font-size: 1.8rem; font-weight: 600; color: var(--primary);
-            font-family: 'Kanit', sans-serif; line-height: 1;
-        }
-        .time-label { 
-            font-size: 0.7rem; color: #ccc; margin-top: 5px; 
-            text-transform: uppercase; letter-spacing: 1px;
-        }
+        /* Timer */
+        .timer-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 360px; margin: 0 auto 50px; padding: 0 15px; }
+        .time-box { background: white; padding: 12px 5px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .time-val { font-size: 1.6rem; font-weight: 600; color: var(--primary-dark); line-height: 1; }
+        .time-label { font-size: 0.7rem; color: #aaa; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
 
-        .simple-gallery {
-            display: grid; grid-template-columns: repeat(2, 1fr);
-            gap: 10px; padding: 0 20px; max-width: 500px; margin: 0 auto;
+        /* Profile Card */
+        .profile-card {
+            background: var(--glass); backdrop-filter: blur(10px);
+            border-radius: 25px; padding: 30px 25px; margin: 0 20px 50px;
+            box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.6);
+            max-width: 420px; width: 90%; margin-left: auto; margin-right: auto; text-align: left;
         }
-        .simple-gallery img {
-            width: 100%; border-radius: 12px; aspect-ratio: 1/1; object-fit: cover;
-        }
+        .profile-header { font-size: 1.2rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 20px; text-align: center; letter-spacing: 1px; border-bottom: 2px dashed #ffe5ec; padding-bottom: 15px; }
+        .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .profile-item { display: flex; flex-direction: column; font-size: 0.95rem; color: var(--text-light); }
+        .profile-item span { font-size: 1.2rem; margin-bottom: 5px; } 
+        .profile-item strong { color: var(--text-main); font-weight: 600; font-size: 0.9rem; }
 
-        /* ส่วนปุ่มบอกรัก */
-        .love-msg-container {
-            margin-top: 40px; padding: 0 20px; min-height: 60px;
-        }
-        .love-btn {
-            background: white; border: 1px solid var(--primary);
-            color: var(--primary); padding: 10px 20px;
-            border-radius: 50px; font-family: 'Kanit', sans-serif;
-            cursor: pointer; margin-bottom: 15px; transition: all 0.3s;
-        }
-        .love-btn:hover { background: var(--primary); color: white; }
+        /* --- Timeline (Updated with Icons) --- */
+        .timeline-container { max-width: 420px; margin: 0 auto 50px; padding: 0 30px; text-align: left; position: relative; }
+        .timeline-container::before { content: ''; position: absolute; left: 45px; top: 15px; bottom: 15px; width: 3px; background: #ffe5ec; border-radius: 5px; }
+        .timeline-item { position: relative; margin-bottom: 35px; padding-left: 50px; }
         
-        #love-text {
-            font-size: 1.1rem; color: var(--text-main); font-weight: 400; min-height: 1.5em;
+        /* จุด Timeline เป็นไอคอน */
+        .timeline-icon {
+            position: absolute; left: 2px; top: 0;
+            width: 30px; height: 30px; background: white;
+            border-radius: 50%; border: 2px solid var(--primary);
+            z-index: 2; display: flex; align-items: center; justify-content: center;
+            font-size: 16px; box-shadow: 0 3px 8px rgba(0,0,0,0.1);
         }
-
-        .cursor { display: inline-block; width: 2px; background-color: #ccc; animation: blink 1s infinite; }
         
+        .timeline-date { display: inline-block; padding: 4px 10px; background: #fff0f3; border-radius: 8px; font-size: 0.8rem; color: var(--primary-dark); font-weight: 600; margin-bottom: 8px; }
+        .timeline-content { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); font-size: 0.95rem; color: #666; line-height: 1.5; }
+        .timeline-content strong { color: var(--primary-dark); }
+
+        /* Gallery */
+        .simple-gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 20px; max-width: 500px; margin: 0 auto 50px; }
+        .simple-gallery img { width: 100%; border-radius: 15px; aspect-ratio: 1/1; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: transform 0.3s; }
+        .simple-gallery img:hover { transform: scale(1.02); }
+
+        /* Buttons */
+        .love-container { position: relative; height: 100px; display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; }
+        .love-btn { background: white; border: 2px solid var(--secondary); color: var(--primary-dark); padding: 12px 35px; border-radius: 50px; font-family: 'Kanit', sans-serif; font-weight: 500; font-size: 1rem; cursor: pointer; transition: all 0.3s; box-shadow: 0 5px 15px rgba(255, 143, 163, 0.15); }
+        .love-btn:hover { background: var(--primary); border-color: var(--primary); color: white; transform: translateY(-3px); }
+        #love-text { margin-top: 15px; font-size: 1.1rem; color: var(--text-main); font-weight: 500; min-height: 1.5em; width: 90%; text-align: center; }
+
+        /* --- Envelope Section (New!) --- */
+        .envelope-section { margin: 40px auto 60px; perspective: 1000px; }
+        .envelope-wrapper {
+            position: relative; width: 280px; height: 180px; margin: 0 auto;
+            cursor: pointer; transition: transform 0.3s;
+        }
+        .envelope-wrapper:hover { transform: scale(1.02); }
+        .envelope {
+            position: relative; width: 100%; height: 100%; background: #ff8fa3;
+            border-radius: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        .envelope::before { /* ฝาปิด */
+            content: ''; position: absolute; top: 0; left: 0;
+            border-left: 140px solid transparent; border-right: 140px solid transparent;
+            border-top: 100px solid #ff7b93; transform-origin: top;
+            transition: transform 0.6s 0.4s; z-index: 5;
+        }
+        .envelope::after { /* ล่าง */
+            content: ''; position: absolute; bottom: 0; left: 0;
+            border-left: 140px solid transparent; border-right: 140px solid #ffccd5;
+            border-bottom: 90px solid #ffccd5; border-top: 90px solid transparent;
+            border-radius: 0 0 10px 10px; z-index: 4; pointer-events: none;
+        }
+        .envelope-left {
+            position: absolute; bottom: 0; left: 0; width: 0; height: 0;
+            border-left: 140px solid #ff9eb0; border-right: 140px solid transparent;
+            border-top: 90px solid transparent; border-bottom: 90px solid #ff9eb0;
+            border-radius: 0 0 0 10px; z-index: 4; pointer-events: none;
+        }
+        .letter {
+            position: absolute; top: 10px; left: 15px; width: 250px; height: 320px;
+            background: white; border-radius: 10px; padding: 25px 20px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.05); transition: transform 0.6s ease;
+            z-index: 2; display: flex; flex-direction: column; text-align: left;
+        }
+        .letter h3 { font-family: 'Charmonman', cursive; color: var(--primary-dark); margin: 0 0 15px 0; font-size: 1.3rem; text-align: center; }
+        .letter p { font-size: 0.85rem; color: #666; line-height: 1.6; margin-bottom: 10px; }
+        .letter-footer { text-align: center; margin-top: auto; font-weight: 600; color: var(--text-main); font-size: 0.9rem; }
+        .heart-seal {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 3rem; color: #d00000; z-index: 10; animation: beat 1.5s infinite;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        /* Open States */
+        .envelope-wrapper.open .envelope::before { transform: rotateX(180deg); z-index: 1; }
+        .envelope-wrapper.open .letter { transform: translateY(-180px); z-index: 3; }
+        .envelope-wrapper.open .heart-seal { opacity: 0; pointer-events: none; }
+
+        /* Animations */
+        .cursor { display: inline-block; width: 2px; height: 1em; background-color: var(--primary); animation: blink 1s infinite; vertical-align: middle;}
+        .touch-heart { position: absolute; pointer-events: none; animation: floatHeart 1s ease-out forwards; font-size: 20px; }
+        @keyframes floatHeart { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-40px) scale(1.5); } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes beat { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.2); } }
         .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
     </style>
@@ -152,13 +196,13 @@
 <body>
 
     <audio id="bg-music" loop>
-        <source src="master.wav" type="audio/mpeg">
+        <source src="song.mp3" type="audio/mpeg">
     </audio>
+    <button class="music-btn" onclick="toggleMusic()">🎵</button>
 
     <div id="quiz-overlay">
         <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExdHoxMHdjaTR6NDRoZGNjdmtkNWliZjU4MXN1cGdybzVrazExOWozdSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Lv2VhwHrt6ljhvZ6LF/giphy.gif" 
              id="mascot" class="mascot-gif" alt="Mascot">
-
         <div class="quiz-card" id="question-box">
             <h2>Love Check</h2>
             <div id="status-msg" class="status-text">เดทแรกของเราที่ไหนเอ่ย?</div>
@@ -181,6 +225,49 @@
             <div class="time-box"><div class="time-val" id="secs">0</div><div class="time-label">Secs</div></div>
         </div>
 
+        <div class="profile-card">
+            <div class="profile-header">MY FAVORITE PERSON ✨</div>
+            <div class="profile-grid">
+                <div class="profile-item"><span>🎂</span><strong>Birthday</strong>16 Apr 2005</div>
+                <div class="profile-item"><span>🩸</span><strong>Blood Type</strong>Group A</div>
+                <div class="profile-item"><span>🧠</span><strong>MBTI</strong>ISFJ</div>
+                <div class="profile-item"><span>👠</span><strong>Shoe Size</strong>38 EU</div>
+                <div class="profile-item" style="grid-column: span 2;"><span>📏</span><strong>Height / Weight</strong>162 cm / 50 kg</div>
+            </div>
+        </div>
+
+        <div class="timeline-container">
+            <div style="font-weight:700; color:var(--text-main); margin-bottom:25px; font-size:1.3rem; padding-left:15px;">Our Journey 🚀</div>
+            
+            <div class="timeline-item">
+                <div class="timeline-icon">🎬</div> <div class="timeline-date">17 Apr 2024</div>
+                <div class="timeline-content">ดูหนังด้วยกันครั้งแรก</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-icon">🍛</div>
+                <div class="timeline-date">20 Apr 2024</div>
+                <div class="timeline-content">กินข้าวด้วยกันครั้งแรก</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-icon" style="background:var(--primary); color:white; border:none;">❤️</div>
+                <div class="timeline-date" style="background:var(--primary); color:white;">22 May 2024 (21:15)</div>
+                <div class="timeline-content" style="border: 2px solid var(--secondary); background:#fff5f7;">
+                    <strong>In a Relationship!</strong><br>
+                    <small style="color:#e05770;">ดูหนังกันสองคนครั้งแรกด้วย</small>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-icon">📺</div>
+                <div class="timeline-date">24 May 2024</div>
+                <div class="timeline-content">ดูซีรีส์ด้วยกันครั้งแรก</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-icon">🍣</div>
+                <div class="timeline-date">22 Jun 2024</div>
+                <div class="timeline-content">ครบ 1 เดือน (กินอาหารญี่ปุ่น)</div>
+            </div>
+        </div>
+
         <div class="simple-gallery">
             <img src="mem1.png" alt="Memory 1">
             <img src="mem2.png" alt="Memory 2">
@@ -188,37 +275,59 @@
             <img src="mem4.png" alt="Memory 4">
         </div>
 
-        <div class="love-msg-container">
-            <button class="love-btn" onclick="generateLove()">💖 Click for Magic</button>
+        <div class="love-container">
+            <button class="love-btn" onclick="generateLove()">👆 จิ้มตรงนี้ (ถ้าใจกล้าพอ)</button>
             <div id="love-text"></div>
         </div>
-        
-        <p style="margin-top:20px; color:#ccc; font-size:0.9rem;">
-            <span id="typing-text"></span><span class="cursor">|</span>
+
+        <p style="margin-bottom:40px; color:#aaa; font-size:0.9rem; font-weight:300;">
+            <span id="typing-text"></span><span class="cursor"></span>
         </p>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
-        const startDate = new Date(2024, 4, 22, 21, 15, 0);
+        // --- DATA ---
+        const startDate = new Date(2024, 4, 22, 21, 15, 0); 
         const answers = {
             q1: ["แปด", "ร้านแปด", "ร้าน8", "8"], 
             q2: ["ชาบู", "หมูกระทะ", "ญี่ปุ่น", "อาหารเกาหลี", "อาหารญี่ปุ่น", "อาหารจีน"] 
         };
+        const footerMessage = "Every love story is beautiful, but ours is my favorite.";
 
-        const footerMessage = "Love you more than yesterday, but less than tomorrow. ❤️";
-
+        // --- ข้อความกวนๆ แต่จริงใจ ---
         const loveReasons = [
-            "ชอบเวลาเธอหัวเราะที่สุดเลย 😊",
-            "ขอบคุณที่คอยซัพพอร์ตกันนะ",
-            "อยู่ด้วยกันแบบนี้ไปนานๆ นะ",
-            "วันไหนเหนื่อยๆ ก็มีเธอนี่แหละคอยฮีลใจ",
-            "รักที่เป็นเธอแบบนี้นะ ❤️",
-            "หิวเมื่อไหร่ก็บอก เดี๋ยวพาไปกิน!",
-            "ดีใจที่มีเธอเข้ามาในชีวิตนะ"
+            "เค้ารักหนูโมที่สุดในโลกเลยนะ อยู่กับเค้าไปนานๆนะ",
+            "ไม่ว่าหนูจะเป็นยังไง เค้าก็จะอยู่ข้างๆหนูนะ",
+            "สัญญาว่าจะพาไปกินของอร่อยๆ บ่อยๆ เลย เตรียมท้องรอได้เลย",
+            "บางทีอาจจะกวนไปบ้าง แต่รักหนูคนเดียวนะ",
         ];
 
         // --- Logic ---
+        function toggleMusic() {
+            const audio = document.getElementById("bg-music");
+            const btn = document.querySelector(".music-btn");
+            if (audio.paused) {
+                audio.play();
+                btn.classList.add("playing");
+                btn.innerHTML = "🔊";
+            } else {
+                audio.pause();
+                btn.classList.remove("playing");
+                btn.innerHTML = "🔇";
+            }
+        }
+
+        // ฟังก์ชันเปิดซองจดหมาย
+        function toggleEnvelope(element) {
+            const wrapper = element.querySelector('.envelope-wrapper');
+            wrapper.classList.toggle('open');
+            if(wrapper.classList.contains('open')) {
+                setTimeout(() => {
+                    confetti({ particleCount: 40, spread: 50, origin: { y: 0.7 } });
+                }, 600);
+            }
+        }
+
         let wrongCount = 0;
         let currentQuestion = 1;
         const gifs = {
@@ -252,9 +361,12 @@
                     statusMsg.innerText = "เย้! ถูกต้อง 💖";
                     statusMsg.style.color = "#ff8fa3";
                     
-                    var audio = document.getElementById("bg-music");
+                    const audio = document.getElementById("bg-music");
                     audio.volume = 0.5;
-                    audio.play().catch(e => console.log("Audio play failed: ", e));
+                    audio.play().then(() => {
+                        document.querySelector(".music-btn").classList.add("playing");
+                        document.querySelector(".music-btn").innerHTML = "🔊";
+                    }).catch(e => console.log("Audio play failed"));
 
                     setTimeout(() => {
                         document.getElementById('quiz-overlay').style.opacity = '0';
@@ -290,7 +402,7 @@
             setTimeout(() => {
                 textElement.innerText = randomMsg;
                 textElement.style.opacity = 1;
-                confetti({ particleCount: 15, spread: 40, origin: { y: 0.8 } });
+                confetti({ particleCount: 20, spread: 60, origin: { y: 0.8 } });
             }, 200);
         }
 
@@ -321,6 +433,22 @@
                 if (Date.now() < end) requestAnimationFrame(frame);
             }());
         }
+
+        // เพิ่ม Effect จิ้มแล้วหัวใจเด้ง
+        document.addEventListener('click', function(e) {
+            // สร้าง element หัวใจ
+            const heart = document.createElement('div');
+            heart.classList.add('touch-heart');
+            heart.innerHTML = '❤️';
+            heart.style.left = e.pageX + 'px';
+            heart.style.top = e.pageY + 'px';
+            document.body.appendChild(heart);
+            
+            // ลบออกเมื่ออนิเมชั่นจบ
+            setTimeout(() => {
+                heart.remove();
+            }, 1000);
+        });
 
         setInterval(updateTimer, 1000);
         updateTimer();
